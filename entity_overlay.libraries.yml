@@ -1,0 +1,20 @@
+# custom build of http://dimsemenov.com/plugins/magnific-popup/
+# @todo set other optional libraries, currently using an embedded one for the MVP
+magnific_popup.custom:
+  version: VERSION
+  css:
+    component:
+      css/magnific-popup.css: { media: screen }
+  js:
+    js/magnific.custom.minified.js: {}
+
+entity_overlay:
+  version: VERSION
+  js:
+    js/behaviors.js: {}
+  dependencies:
+     - core/drupal
+     - core/jquery
+     - core/jquery.once
+     - core/drupalSettings
+     - entity_overlay/magnific_popup.custom

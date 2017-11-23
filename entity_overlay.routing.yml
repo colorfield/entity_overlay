@@ -1,0 +1,6 @@
+entity_overlay.get_entity_response:
+  path: '/entity_overlay/response/{entity_type_id}/{view_mode}/{entity_id}'
+  defaults:
+    _controller: '\Drupal\entity_overlay\Controller\EntityOverlayController::getResponse'
+  requirements:
+    _permission: 'access content'

@@ -1,0 +1,17 @@
+
+{#
+/**
+ * @file
+ * Default theme implementation of entity overlay.
+ *
+ * @ingroup themeable
+ */
+#}
+
+<div class="entity-overlay">
+  <div class="entity-overlay__topbar">
+    <button class="button-close button-unstyled"><i class="close ion-close-circled"></i><span class="visually-hidden">{{ 'Close'|t }}</span></button>
+  </div>
+  {# Entity view implemented by the view mode defined in the configuration and thus delegated to the theme #}
+  {{ entity_view }}
+</div>
