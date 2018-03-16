@@ -86,12 +86,16 @@ class NodesBlock extends BlockBase implements ContainerFactoryPluginInterface {
     foreach ($contentTypes as $type) {
       $contentTypeOptions[$type->id()] = $type->label();
     }
+
+    // @todo dependency injection
+    /** @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository */
+    $entityDisplayRepository = \Drupal::service('entity_display.repository');
+
     $form['items'] = [
       '#type' => 'number',
       '#title' => $this->t('Items'),
       '#description' => $this->t('Amount of items to be displayed.'),
       '#default_value' => $this->configuration['items'],
-      '#weight' => '1',
     ];
     $form['content_type'] = [
       '#type' => 'select',
@@ -100,31 +104,26 @@ class NodesBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#options' => $contentTypeOptions,
       '#default_value' => $this->configuration['content_type'],
       '#size' => 5,
-      '#weight' => '1',
     ];
     $form['list_view_mode'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('View mode'),
+      '#type' => 'select',
+      '#title' => $this->t('List view mode'),
       '#description' => '',
+      '#options' => $entityDisplayRepository->getViewModeOptions('node'),
       '#default_value' => $this->configuration['list_view_mode'],
-      '#maxlength' => 64,
-      '#size' => 64,
-      '#weight' => '2',
     ];
     $form['overlay_view_mode'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => $this->t('Overlay view mode'),
       '#description' => '',
+      '#options' => $entityDisplayRepository->getViewModeOptions('node'),
       '#default_value' => $this->configuration['overlay_view_mode'],
-      '#maxlength' => 64,
-      '#size' => 64,
-      '#weight' => '3',
     ];
     $form['output'] = [
       '#type' => 'details',
       '#title' => $this->t('Output'),
       '#description' => $this->t('Change markup and classes.'),
-      '#weight' => '4',
+      '#weight' => 5,
       '#open' => FALSE,
     ];
     $form['output']['list_type'] = [
