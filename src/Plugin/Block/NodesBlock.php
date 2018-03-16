@@ -194,7 +194,11 @@ class NodesBlock extends BlockBase implements ContainerFactoryPluginInterface {
     // Get the display.
     $items = [];
     foreach ($nodes as $node) {
-      $items[] = $this->entityTools->entityDisplay($node, $this->configuration['list_view_mode']);
+      $items[] = [
+        '#theme' => 'entity_overlay_list_item',
+        '#entity_view' => $this->entityTools->entityDisplay($node, $this->configuration['list_view_mode']),
+        '#entity_id' => $node->id(),
+      ];
     }
     // Prepare the render array.
     $listAttributes = [];

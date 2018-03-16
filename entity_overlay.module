@@ -34,6 +34,13 @@ function entity_overlay_theme() {
       ],
       'render element' => 'children',
     ],
+    'entity_overlay_list_item' => [
+      'variables' => [
+        'entity_view' => NULL,
+        'entity_id' => NULL,
+      ],
+      'render element' => 'children',
+    ],
     'entity_overlay' => [
       'variables' => [
         'entity_view' => NULL,
