@@ -10,5 +10,7 @@
     "issues": "https://www.drupal.org/project/issues/entity_overlay",
     "source": "http://cgit.drupalcode.org/entity_overlay"
   },
-  "require": { }
+  "require": {
+    "drupal/entity_tools": "1.x-dev"
+  }
 }
