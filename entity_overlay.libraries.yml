@@ -8,7 +8,17 @@ magnific_popup.custom:
   js:
     js/magnific.custom.minified.js: {}
 
-entity_overlay:
+entity_overlay.commands:
+  version: VERSION
+  js:
+    js/commands.js: {}
+  dependencies:
+     - core/drupal.ajax
+     - core/jquery
+     - core/jquery.once
+     - core/drupal.dialog
+
+entity_overlay.behaviors:
   version: VERSION
   js:
     js/behaviors.js: {}
@@ -16,5 +26,6 @@ entity_overlay:
      - core/drupal
      - core/jquery
      - core/jquery.once
+     - core/drupal.dialog
      - core/drupalSettings
      - entity_overlay/magnific_popup.custom

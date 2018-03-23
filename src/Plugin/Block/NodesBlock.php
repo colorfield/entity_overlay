@@ -223,7 +223,7 @@ class NodesBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#list' => $entityList,
       '#attached' => [
         'library' => [
-          'entity_overlay/entity_overlay',
+          'entity_overlay/entity_overlay.behaviors',
         ],
         'drupalSettings' => [
           'overlay_view_mode' => $this->configuration['overlay_view_mode'],

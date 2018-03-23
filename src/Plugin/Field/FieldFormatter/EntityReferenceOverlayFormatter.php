@@ -17,15 +17,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Plugin implementation of the 'entity reference overlay' formatter.
  *
  * @FieldFormatter(
- *   id = "entity_reference_entity_overlay_view",
- *   label = @Translation("Overlay rendered entity"),
- *   description = @Translation("Display the referenced entities rendered by entity_view() as an overlay."),
+ *   id = "entity_reference_entity_overlay_formatter",
+ *   label = @Translation("Rendered entity overlay"),
+ *   description = @Translation("Display a view mode of the referenced entities and display another view mode of the rendered entity on click as an overlay."),
  *   field_types = {
  *     "entity_reference"
  *   }
  * )
  */
-class EntityReferenceEntityOverlayFormatter extends EntityReferenceFormatterBase implements ContainerFactoryPluginInterface {
+class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase implements ContainerFactoryPluginInterface {
+
+  use EntityOverlayFormatterBase;
 
   /**
    * The number of times this formatter allows rendering the same entity.
@@ -166,63 +168,47 @@ class EntityReferenceEntityOverlayFormatter extends EntityReferenceFormatterBase
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+    $elements = [];
     $list_view_mode = $this->getSetting('list_view_mode');
     $overlay_view_mode = $this->getSetting('overlay_view_mode');
-    // @todo dependency injection
-    $entityTools = \Drupal::service('entity_tools');
-    $elements = [];
 
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
-      // Due to render caching and delayed calls, the viewElements() method
-      // will be called later in the rendering process through a '#pre_render'
-      // callback, so we need to generate a counter that takes into account
-      // all the relevant information about this field and the referenced
-      // entity that is being rendered.
-      $recursive_render_id = $items->getFieldDefinition()->getTargetEntityTypeId()
-        . $items->getFieldDefinition()->getTargetBundle()
-        . $items->getName()
-        // We include the referencing entity, so we can render default images
-        // without hitting recursive protections.
-        . $items->getEntity()->id()
-        . $entity->getEntityTypeId()
-        . $entity->id();
+      if (!$entity->isNew()) {
+        $view_builder = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId());
+        $elements[$delta] = [
+          '#theme' => 'entity_overlay_list_item',
+          '#entity_view' => $view_builder->view($entity, $list_view_mode, $entity->language()->getId()),
+          '#entity_id' => $entity->id(),
+          '#entity_overlay_link' => $this->getOverlayLink($entity, $overlay_view_mode),
+        ];
 
-      if (isset(static::$recursiveRenderDepth[$recursive_render_id])) {
-        static::$recursiveRenderDepth[$recursive_render_id]++;
+        if (!empty($items[$delta]->_attributes)) {
+          $elements[$delta]['#options'] += ['attributes' => []];
+          $elements[$delta]['#options']['attributes'] += $items[$delta]->_attributes;
+          // Unset field item attributes since they have been included in the
+          // formatter output and shouldn't be rendered in the field template.
+          unset($items[$delta]->_attributes);
+        }
       }
       else {
-        static::$recursiveRenderDepth[$recursive_render_id] = 1;
+        continue;
       }
-
-      // Protect ourselves from recursive rendering.
-      if (static::$recursiveRenderDepth[$recursive_render_id] > static::RECURSIVE_RENDER_LIMIT) {
-        $this->loggerFactory->get('entity')->error('Recursive rendering detected when rendering entity %entity_type: %entity_id, using the %field_name field on the %bundle_name bundle. Aborting rendering.', [
-          '%entity_type' => $entity->getEntityTypeId(),
-          '%entity_id' => $entity->id(),
-          '%field_name' => $items->getName(),
-          '%bundle_name' => $items->getFieldDefinition()->getTargetBundle(),
-        ]);
-        return $elements;
-      }
-
-      $view_builder = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId());
-      $elements[$delta] = [
-        '#theme' => 'entity_overlay_list_item',
-        '#entity_view' => $view_builder->view($entity, $list_view_mode, $entity->language()->getId()),
-        '#entity_id' => $entity->id(),
-      ];
-
-      // @todo to review
-      // Add a resource attribute to set the mapping property's value to the
-      // entity's url. Since we don't know what the markup of the entity will
-      // be, we shouldn't rely on it for structured data such as RDFa.
-      if (!empty($items[$delta]->_attributes) && !$entity->isNew() && $entity->hasLinkTemplate('canonical')) {
-        $items[$delta]->_attributes += ['resource' => $entity->toUrl()->toString()];
-      }
+      $elements[$delta]['#cache']['tags'] = $entity->getCacheTags();
     }
 
+    // Container for loading entity content.
+    $elements[] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => 'entity-overlay__container',
+      ],
+    ];
+
+    $elements['#attached']['library'][] = 'core/drupal.ajax';
+    $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.commands';
+
     $overlayRoute = Url::fromRoute('entity_overlay.get_entity_response', [
-    // @todo get it from the entity bundle
+      // @todo get it from the entity bundle
       'entity_type_id' => 'node',
       'view_mode' => $overlay_view_mode,
       // To be replaced, @todo review other ways to pass route to js.
@@ -230,8 +216,9 @@ class EntityReferenceEntityOverlayFormatter extends EntityReferenceFormatterBase
     ]);
     $overlayPath = $overlayRoute->getInternalPath();
 
+    // @todo refactoring needed with commands.
     // Wrapper to get a unique selector.
-    $listSelector = 'entity_overlay_wrapper';
+    $listSelector = 'entity_overlay__wrapper';
     $elements['#prefix'] = '<div class="' . $listSelector . '">';
     $elements['#suffix'] = '</div>';
     $elements['#attached']['library'][] = 'entity_overlay/entity_overlay';
@@ -240,7 +227,7 @@ class EntityReferenceEntityOverlayFormatter extends EntityReferenceFormatterBase
       'list_selector' => $listSelector,
       'overlay_path' => $overlayPath,
     ];
-
+    $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.behaviors';
     return $elements;
   }
 

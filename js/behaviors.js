@@ -22,7 +22,7 @@
        */
       function displayOverlay(element) {
         $element = element;
-        var data = $element.closest('.entity_overlay_list_item').data();
+        var data = $element.closest('.entity-overlay__list-item').data();
         if(data.hasOwnProperty('entityOverlayId')) {
           $element.attr('href', '/' + getOverlayPath(data.entityOverlayId));
           $element.magnificPopup({
@@ -45,7 +45,7 @@
         }
       }
 
-      // @todo review selector construction and portability
+      // // @todo review selector construction and portability
       $(context).find($('.' + settings.list_selector + ' .node-readmore a')).once('entityOverlayBehavior').each(function (key, value) {
         displayOverlay($(this));
       });

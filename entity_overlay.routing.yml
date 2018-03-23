@@ -4,3 +4,15 @@ entity_overlay.get_entity_response:
     _controller: '\Drupal\entity_overlay\Controller\EntityOverlayController::getResponse'
   requirements:
     _permission: 'access content'
+
+entity_overlay.load_entity:
+  path: '/entity_overlay/load/{method}/{entity_type}/{entity}/{view_mode}'
+  defaults:
+    _controller: '\Drupal\entity_overlay\Controller\EntityOverlayController::getEntity'
+  requirements:
+    _permission: 'access content'
+    method: 'nojs|ajax'
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
