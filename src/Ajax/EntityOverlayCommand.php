@@ -13,7 +13,7 @@ class EntityOverlayCommand implements CommandInterface {
   /**
    * Drupal\Core\Entity\EntityInterface definition.
    *
-   * @var EntityInterface
+   * @var \Drupal\Core\Entity\EntityInterface
    */
   protected $entity;
 
@@ -38,7 +38,7 @@ class EntityOverlayCommand implements CommandInterface {
    * {@inheritdoc}
    */
   public function render() {
-    return array(
+    return [
       'command' => 'entityOverlay',
       // @todo cleaning up
       'entity_type_id' => $this->entity->getEntityTypeId(),
@@ -47,7 +47,7 @@ class EntityOverlayCommand implements CommandInterface {
       'view' => $this->view,
       // @todo use getRenderedContent
       'rendered_entity' => \Drupal::service('renderer')->renderRoot($this->view),
-    );
+    ];
   }
 
 }

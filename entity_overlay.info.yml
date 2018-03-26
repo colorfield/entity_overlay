@@ -1,7 +1,5 @@
 name: Entity Overlay
 type: module
-description: Display an overlay of a view mode from another view mode.
+description: Display a content entity as an overlay.
 core: 8.x
 package: Other
-dependencies:
-  - entity_tools

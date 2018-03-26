@@ -16,7 +16,7 @@ function entity_overlay_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.entity_overlay':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Display an overlay of a view mode from another view mode.') . '</p>';
+      $output .= '<p>' . t('Display a content entity as an overlay.') . '</p>';
       return $output;
 
     default:
@@ -38,6 +38,7 @@ function entity_overlay_theme() {
       'variables' => [
         'entity_view' => NULL,
         'entity_id' => NULL,
+        'entity_type_id' => NULL,
         'entity_overlay_link' => NULL,
       ],
       'render element' => 'children',

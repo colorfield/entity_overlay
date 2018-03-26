@@ -1,12 +1,5 @@
-entity_overlay.get_entity_response:
-  path: '/entity_overlay/response/{entity_type_id}/{view_mode}/{entity_id}'
-  defaults:
-    _controller: '\Drupal\entity_overlay\Controller\EntityOverlayController::getResponse'
-  requirements:
-    _permission: 'access content'
-
 entity_overlay.load_entity:
-  path: '/entity_overlay/load/{method}/{entity_type}/{entity}/{view_mode}'
+  path: '/entity_overlay/load/{method}/{entity_type_id}/{entity_id}/{view_mode}'
   defaults:
     _controller: '\Drupal\entity_overlay\Controller\EntityOverlayController::getEntity'
   requirements:

@@ -10,7 +10,6 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -131,6 +130,7 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    // @todo add settings: width, height, show 'open' link, library
     $elements['list_view_mode'] = [
       '#type' => 'select',
       '#options' => $this->entityDisplayRepository->getViewModeOptions($this->getFieldSetting('target_type')),
@@ -172,6 +172,8 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
     $list_view_mode = $this->getSetting('list_view_mode');
     $overlay_view_mode = $this->getSetting('overlay_view_mode');
 
+    // Prepare settings that will be passed to javascript behaviours.
+    $entitySettings = [];
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
       if (!$entity->isNew()) {
         $view_builder = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId());
@@ -179,7 +181,16 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
           '#theme' => 'entity_overlay_list_item',
           '#entity_view' => $view_builder->view($entity, $list_view_mode, $entity->language()->getId()),
           '#entity_id' => $entity->id(),
+          '#entity_type_id' => $entity->getEntityTypeId(),
           '#entity_overlay_link' => $this->getOverlayLink($entity, $overlay_view_mode),
+        ];
+
+        // @todo review path structure for each content entity type
+        $pathMatch = [$entity->getEntityTypeId() . '/' . $entity->id()];
+        // @todo add path aliases
+        $entitySettings[$entity->getEntityTypeId() . '_' . $entity->id()] = [
+          'overlay_url' => $this->getOverlayUrl($entity, $overlay_view_mode)->toString(),
+          'path_match' => $pathMatch,
         ];
 
         if (!empty($items[$delta]->_attributes)) {
@@ -206,28 +217,11 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
 
     $elements['#attached']['library'][] = 'core/drupal.ajax';
     $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.commands';
-
-    $overlayRoute = Url::fromRoute('entity_overlay.get_entity_response', [
-      // @todo get it from the entity bundle
-      'entity_type_id' => 'node',
-      'view_mode' => $overlay_view_mode,
-      // To be replaced, @todo review other ways to pass route to js.
-      'entity_id' => 0,
-    ]);
-    $overlayPath = $overlayRoute->getInternalPath();
-
-    // @todo refactoring needed with commands.
-    // Wrapper to get a unique selector.
-    $listSelector = 'entity_overlay__wrapper';
-    $elements['#prefix'] = '<div class="' . $listSelector . '">';
-    $elements['#suffix'] = '</div>';
-    $elements['#attached']['library'][] = 'entity_overlay/entity_overlay';
-    $elements['#attached']['drupalSettings'] = [
-      'overlay_view_mode' => $overlay_view_mode,
-      'list_selector' => $listSelector,
-      'overlay_path' => $overlayPath,
-    ];
     $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.behaviors';
+    $elements['#attached']['drupalSettings'] = [
+      'entity_overlay' => $entitySettings,
+    ];
+
     return $elements;
   }
 

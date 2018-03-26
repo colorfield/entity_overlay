@@ -1,26 +1,17 @@
 # Entity Overlay
 
-Drupal 8 module that loads an entity overlay view mode from another view mode.
-
-Example: on a list of node teasers, a click event on an element of the list displays an overlay of the node full view mode.
+Drupal 8 module that displays a content entity as an overlay.
 
 ## Configuration
 
-Currently for nodes only.
-
-### Node entities list as a Block
-
-- Add a _Nodes overlay_ block.
-- Configure the _List view mode_ (e.g. teaser) and the _Overlay view mode_ (e.g. full).
-
 ### Field Formatter for entity reference
 
-- Add an entity reference to a node, referencing another node.
-- On a view mode, choose the _Overlay rendered entity_ for the formatter.
-- Configure then the _List view mode_ and the _Overlay view mode_.
+- Add an entity reference field.
+- On a display / view mode, choose the _Label overlay_ or the _Rendered entity overlay_ as the formatter.
+- Configure the desired view mode.
 
 ## Roadmap
 
-- Default overlay styling
+- Overlay settings
+- Change overlay method from the configuration (currently a Drupal dialog)
 - Views Formatter
-- Change overlay library from the configuration (currently Magnific popup by default)

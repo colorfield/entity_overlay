@@ -3,55 +3,20 @@
   Drupal.behaviors.entityOverlayBehavior = {
     attach: function (context, settings) {
 
-      /**
-       * Replaces the placeholder value (0)
-       * for the entity by the actual entity id.
-       *
-       * @param entityId
-       */
-      function getOverlayPath(entityId) {
-        var overlayPath = settings.overlay_path;
-        // replace lastIndexOf 0
-        return overlayPath.replace(/(.*)0(.*)$/, "$1" + entityId + "$2")
-      }
-
-      /**
-       * Displays the overlay based on the list element.
-       *
-       * @param element
-       */
-      function displayOverlay(element) {
-        $element = element;
-        var data = $element.closest('.entity-overlay__list-item').data();
-        if(data.hasOwnProperty('entityOverlayId')) {
-          $element.attr('href', '/' + getOverlayPath(data.entityOverlayId));
-          $element.magnificPopup({
-            type: 'ajax',
-            overflowY: 'scroll',
-            mainClass: 'node-overlay',
-            closeBtnInside: false,
-            showCloseBtn: false,
-            closeOnContentClick: false,
-            closeOnBgClick: true,
-            callbacks: {
-              ajaxContentAdded: function () {
-                this.content.find('.button-close').on('click', function (e) {
-                    e.preventDefault();
-                    $.magnificPopup.close();
-                });
-              }
-            }
-          });
+      // Replace paths to the entity by the entity overlay url.
+      $(context).find($('.entity-overlay__list-item')).once('entityOverlayBehavior').each(function (key, value) {
+        var entityId = $(this).data('entity-overlay-id');
+        var entityTypeId = $(this).data('entity-overlay-type-id');
+        if(settings.entity_overlay.hasOwnProperty(entityTypeId + '_' + entityId)) {
+          var paths = settings.entity_overlay[entityTypeId + '_' + entityId];
+          console.log(paths);
+          var pathMatchLength = paths['path_match'].length;
+          // Search and replace all path matches by the entity overlay url.
+          for (var i = 0; i < pathMatchLength; i++) {
+            console.log(paths['path_match'][i]);
+            $(this).find('a[href$="'+paths['path_match'][i]+'"]').addClass('use-ajax').attr('href', paths['overlay_url']);
+          }
         }
-      }
-
-      // // @todo review selector construction and portability
-      $(context).find($('.' + settings.list_selector + ' .node-readmore a')).once('entityOverlayBehavior').each(function (key, value) {
-        displayOverlay($(this));
-      });
-
-      $(context).find($('.' + settings.list_selector + ' [rel=bookmark]')).once('entityOverlayBehavior').each(function (key, value) {
-        displayOverlay($(this));
       });
 
     }

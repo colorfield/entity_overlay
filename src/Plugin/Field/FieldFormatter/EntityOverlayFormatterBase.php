@@ -13,9 +13,33 @@ use Drupal\Core\Url;
 trait EntityOverlayFormatterBase {
 
   /**
+   * Returns the overlay url.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   Entity to display on the overlay.
+   * @param string $view_mode
+   *   View mode for the overlay.
+   *
+   * @return \Drupal\Core\Url
+   *   Url of the entity overlay.
+   */
+  public function getOverlayUrl(EntityInterface $entity, $view_mode) {
+    // Set up the options for the route, default the method to 'nojs' since
+    // the drupal ajax library will replace that.
+    $options = [
+      'method' => 'nojs',
+      'entity_type_id' => $entity->getEntityTypeId(),
+      'entity_id' => $entity->id(),
+      'view_mode' => $view_mode,
+    ];
+    // Create the path from the route, passing the options it needs.
+    return Url::fromRoute('entity_overlay.load_entity', $options);
+  }
+
+  /**
    * Returns the overlay link.
    *
-   * @param EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   Entity to display on the overlay.
    * @param string $view_mode
    *   View mode for the overlay.
@@ -24,16 +48,7 @@ trait EntityOverlayFormatterBase {
    *   Link render array.
    */
   public function getOverlayLink(EntityInterface $entity, $view_mode) {
-    // Set up the options for the route, default the method to 'nojs' since
-    // the drupal ajax library will replace that.
-    $options = [
-      'method' => 'nojs',
-      'entity_type' => $entity->getEntityTypeId(),
-      'entity' => $entity->id(),
-      'view_mode' => $view_mode,
-    ];
-    // Create the path from the route, passing the options it needs.
-    $url = Url::fromRoute('entity_overlay.load_entity', $options);
+    $url = $this->getOverlayUrl($entity, $view_mode);
     // Create a link element. Add the 'use-ajax' class so
     // Drupal's core AJAX library will detect this link and ajaxify it.
     return [
