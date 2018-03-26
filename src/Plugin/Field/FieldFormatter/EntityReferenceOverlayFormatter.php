@@ -167,6 +167,9 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
     $display_link = $this->getSetting('display_link');
     $link_title = $this->getSetting('link_title');
 
+    // @todo dependency injection
+    $pathAliasManager = \Drupal::service('path.alias_manager');
+
     // Prepare settings that will be passed to javascript behaviours.
     $entitySettings = [];
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
@@ -182,8 +185,10 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
         ];
 
         // @todo review path structure for each content entity type
-        $pathMatch = [$entity->getEntityTypeId() . '/' . $entity->id()];
-        // @todo add path aliases
+        $pathMatch = [
+          $entity->getEntityTypeId() . '/' . $entity->id(),
+          $pathAliasManager->getAliasByPath('/' . $entity->getEntityTypeId() . '/' . $entity->id()),
+        ];
         $entitySettings[$entity->getEntityTypeId() . '_' . $entity->id()] = [
           'overlay_url' => $this->getOverlayUrl($entity, $overlay_view_mode)->toString(),
           'path_match' => $pathMatch,
