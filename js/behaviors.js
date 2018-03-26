@@ -9,11 +9,9 @@
         var entityTypeId = $(this).data('entity-overlay-type-id');
         if(settings.entity_overlay.hasOwnProperty(entityTypeId + '_' + entityId)) {
           var paths = settings.entity_overlay[entityTypeId + '_' + entityId];
-          console.log(paths);
           var pathMatchLength = paths['path_match'].length;
           // Search and replace all path matches by the entity overlay url.
           for (var i = 0; i < pathMatchLength; i++) {
-            console.log(paths['path_match'][i]);
             $(this).find('a[href$="'+paths['path_match'][i]+'"]').addClass('use-ajax').attr('href', paths['overlay_url']);
           }
         }

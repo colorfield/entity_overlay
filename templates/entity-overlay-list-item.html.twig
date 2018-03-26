@@ -3,6 +3,8 @@
   especially class and data attribute that are used in js behaviors.
 #}
 <div class="entity-overlay__list-item" data-entity-overlay-id="{{ entity_id }}" data-entity-overlay-type-id="{{ entity_type_id }}">
-  {{ entity_overlay_link }}
   {{ entity_view }}
+  {% if display_link %}
+    {{ entity_overlay_link }}
+  {% endif %}
 </div>

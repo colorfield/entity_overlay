@@ -43,22 +43,25 @@ trait EntityOverlayFormatterBase {
    *   Entity to display on the overlay.
    * @param string $view_mode
    *   View mode for the overlay.
+   * @param string $title
+   *   Optional link title override.
    *
    * @return array
    *   Link render array.
    */
-  public function getOverlayLink(EntityInterface $entity, $view_mode) {
+  public function getOverlayLink(EntityInterface $entity, $view_mode, $title = '') {
     $url = $this->getOverlayUrl($entity, $view_mode);
-    // Create a link element. Add the 'use-ajax' class so
-    // Drupal's core AJAX library will detect this link and ajaxify it.
     return [
       '#type' => 'link',
-      '#title' => $entity->getTitle(),
+    // @todo review for content entity types
+      '#title' => empty($title) ? $entity->getTitle() : $title,
       '#url' => $url,
       '#options' => $url->getOptions() + [
         'attributes' => [
           'class' => [
+    // Tell Drupal core to treat it as ajax.
             'use-ajax',
+            'entity-overlay-link',
             'entity-overlay__' . $entity->getEntityTypeId() . '-' . $entity->id(),
           ],
         ],

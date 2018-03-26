@@ -28,24 +28,13 @@ function entity_overlay_help($route_name, RouteMatchInterface $route_match) {
  */
 function entity_overlay_theme() {
   return [
-    'entity_list' => [
-      'variables' => [
-        'list' => NULL,
-      ],
-      'render element' => 'children',
-    ],
     'entity_overlay_list_item' => [
       'variables' => [
         'entity_view' => NULL,
         'entity_id' => NULL,
         'entity_type_id' => NULL,
         'entity_overlay_link' => NULL,
-      ],
-      'render element' => 'children',
-    ],
-    'entity_overlay' => [
-      'variables' => [
-        'entity_view' => NULL,
+        'display_link' => NULL,
       ],
       'render element' => 'children',
     ],

@@ -62,7 +62,7 @@ class EntityOverlayController extends ControllerBase {
     }
     else {
       // Javascript is not used, redirect to the entity.
-      $response = new RedirectResponse(Url::fromRoute("entity.{$entity_type_id}.canonical", ["{$entity_type_id}" => $entity_id])->toString(), 302);
+      $response = new RedirectResponse(Url::fromRoute("entity.{$entity_type_id}.canonical", [$entity_type_id => $entity_id])->toString(), 302);
     }
 
     return $response;

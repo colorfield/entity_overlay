@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,19 +27,7 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
 
   use EntityOverlayFormatterBase;
 
-  /**
-   * The number of times this formatter allows rendering the same entity.
-   *
-   * @var int
-   */
-  const RECURSIVE_RENDER_LIMIT = 20;
-
-  /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
+  // @todo review recursive render limit
 
   /**
    * The entity type manager.
@@ -55,16 +42,6 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
    * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
    */
   protected $entityDisplayRepository;
-
-  /**
-   * An array of counters for the recursive rendering protection.
-   *
-   * Each counter takes into account all the relevant information about the
-   * field and the referenced entity that is being rendered.
-   *
-   * @var array
-   */
-  protected static $recursiveRenderDepth = [];
 
   /**
    * Constructs a EntityReferenceEntityFormatter instance.
@@ -83,16 +60,13 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings settings.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, LoggerChannelFactoryInterface $logger_factory, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-    $this->loggerFactory = $logger_factory;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
   }
@@ -109,7 +83,6 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('logger.factory'),
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository')
     );
@@ -122,7 +95,9 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
     return [
       'list_view_mode' => 'teaser',
       'overlay_view_mode' => 'default',
-      'link' => FALSE,
+      // 'width' => 500,.
+      'display_link' => FALSE,
+      'link_title' => t('Read more'),
     ] + parent::defaultSettings();
   }
 
@@ -145,6 +120,24 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
       '#default_value' => $this->getSetting('overlay_view_mode'),
       '#required' => TRUE,
     ];
+    // $elements['width'] = [
+    // '#type' => 'textfield',
+    // '#title' => t('Width'),
+    // '#description' => 'In pixels (e.g. 500) or percents (e.g. 100%)',
+    // '#default_value' => $this->getSetting('width'),
+    // '#required' => TRUE,
+    // ];.
+    $elements['display_link'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Display an extra link to open the overlay?'),
+      '#default_value' => $this->getSetting('display_link'),
+    ];
+    $elements['link_title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Link title'),
+    // @todo translate
+      '#default_value' => $this->getSetting('link_title'),
+    ];
 
     return $elements;
   }
@@ -160,7 +153,7 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
     $overlay_view_mode = $this->getSetting('overlay_view_mode');
     $summary[] = t('List rendered as @mode', ['@mode' => isset($view_modes[$list_view_mode]) ? $view_modes[$list_view_mode] : $list_view_mode]);
     $summary[] = t('Overlay rendered as @mode', ['@mode' => isset($view_modes[$overlay_view_mode]) ? $view_modes[$overlay_view_mode] : $overlay_view_mode]);
-
+    // @todo add new settings to summary
     return $summary;
   }
 
@@ -171,6 +164,8 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
     $elements = [];
     $list_view_mode = $this->getSetting('list_view_mode');
     $overlay_view_mode = $this->getSetting('overlay_view_mode');
+    $display_link = $this->getSetting('display_link');
+    $link_title = $this->getSetting('link_title');
 
     // Prepare settings that will be passed to javascript behaviours.
     $entitySettings = [];
@@ -182,7 +177,8 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
           '#entity_view' => $view_builder->view($entity, $list_view_mode, $entity->language()->getId()),
           '#entity_id' => $entity->id(),
           '#entity_type_id' => $entity->getEntityTypeId(),
-          '#entity_overlay_link' => $this->getOverlayLink($entity, $overlay_view_mode),
+          '#entity_overlay_link' => $this->getOverlayLink($entity, $overlay_view_mode, $link_title),
+          '#display_link' => $display_link,
         ];
 
         // @todo review path structure for each content entity type

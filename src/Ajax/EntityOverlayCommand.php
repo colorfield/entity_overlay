@@ -44,6 +44,8 @@ class EntityOverlayCommand implements CommandInterface {
       'entity_type_id' => $this->entity->getEntityTypeId(),
       'entity_id' => $this->entity->id(),
       'entity' => $this->entity,
+    // @todo review for content entity types
+      'entity_title' => $this->entity->getTitle(),
       'view' => $this->view,
       // @todo use getRenderedContent
       'rendered_entity' => \Drupal::service('renderer')->renderRoot($this->view),
