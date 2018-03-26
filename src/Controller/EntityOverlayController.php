@@ -4,9 +4,9 @@ namespace Drupal\entity_overlay\Controller;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
-use Drupal\entity_overlay\Ajax\EntityOverlayCommand;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -38,23 +38,27 @@ class EntityOverlayController extends ControllerBase {
       try {
         $entity = $this->entityTypeManager()->getStorage($entity_type_id)->load($entity_id);
         $view_builder = $this->entityTypeManager()->getViewBuilder($entity_type_id);
-
         // Get the render array of this entity in the specified view mode.
-        $render = $view_builder->view($entity, $view_mode);
-
+        $view = $view_builder->view($entity, $view_mode);
+        // Prepare the render array.
         $build = [
           '#type' => 'container',
           '#attributes' => [
             'id' => 'entity-overlay__container',
             'class' => 'entity-overlay__container--' . $entity_type_id . '-' . $entity_id,
           ],
-          'entity' => $render,
+          'entity' => $view,
         ];
 
         $response = new AjaxResponse();
-        // $response->addCommand(new ReplaceCommand(
-        // '#entity-overlay__container', $build));.
-        $response->addCommand(new EntityOverlayCommand($entity, $build));
+        $content = \Drupal::service('renderer')->renderRoot($build);
+        // Attach the library necessary for using the OpenDialogCommand
+        // and set the attachments for this Ajax response.
+        $build['#attached']['library'][] = 'core/drupal.dialog.ajax';
+        $response->setAttachments($build['#attached']);
+        // @todo set dialog options
+        $options = [];
+        $response->addCommand(new OpenDialogCommand('#entity-overlay__container', $entity->getTitle(), $content, $options));
       }
       catch (InvalidPluginDefinitionException $exception) {
         print $exception->getMessage();

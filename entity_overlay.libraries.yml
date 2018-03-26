@@ -1,13 +1,3 @@
-entity_overlay.commands:
-  version: VERSION
-  js:
-    js/commands.js: {}
-  dependencies:
-     - core/drupal.ajax
-     - core/jquery
-     - core/jquery.once
-     - core/drupal.dialog
-
 entity_overlay.behaviors:
   version: VERSION
   js:
