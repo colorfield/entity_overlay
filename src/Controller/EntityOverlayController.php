@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -58,7 +59,16 @@ class EntityOverlayController extends ControllerBase {
         $response->setAttachments($build['#attached']);
         // @todo set dialog options
         $options = [];
-        // @todo fix label translation
+        // @todo review this section for label translation:
+        // this is a workaround because in some situations,
+        // the interface language of the referenced entity
+        // could be different from the interface language.
+        if ($entity instanceof ContentEntityInterface && $entity->isTranslatable()) {
+          $languageId = \Drupal::service('language_manager')->getCurrentLanguage()->getId();
+          if ($entity->hasTranslation($languageId)) {
+            $entity = $entity->getTranslation($languageId);
+          }
+        }
         $response->addCommand(new OpenDialogCommand('#entity-overlay__container', $entity->label(), $content, $options));
       }
       catch (InvalidPluginDefinitionException $exception) {
