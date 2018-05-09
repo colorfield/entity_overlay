@@ -95,7 +95,6 @@ class EntityReferenceLabelOverlayFormatter extends EntityReferenceEntityFormatte
     ];
 
     $elements['#attached']['library'][] = 'core/drupal.ajax';
-    $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.commands';
     return $elements;
   }
 

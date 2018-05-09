@@ -53,13 +53,12 @@ trait EntityOverlayFormatterBase {
     $url = $this->getOverlayUrl($entity, $view_mode);
     return [
       '#type' => 'link',
-    // @todo review for content entity types
-      '#title' => empty($title) ? $entity->getTitle() : $title,
+      '#title' => empty($title) ? $entity->label() : $title,
       '#url' => $url,
       '#options' => $url->getOptions() + [
         'attributes' => [
           'class' => [
-    // Tell Drupal core to treat it as ajax.
+            // Tell Drupal core to treat it as ajax.
             'use-ajax',
             'entity-overlay-link',
             'entity-overlay__' . $entity->getEntityTypeId() . '-' . $entity->id(),

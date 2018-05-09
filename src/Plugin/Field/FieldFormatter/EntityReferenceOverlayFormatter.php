@@ -216,12 +216,20 @@ class EntityReferenceOverlayFormatter extends EntityReferenceFormatterBase imple
       ],
     ];
 
-    $elements['#attached']['library'][] = 'core/drupal.ajax';
-    $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.commands';
+    // Attaching here instead of entity_overlay.libraries.yml.
+    // @todo review { weight: n } in .libraries.yml for depedencies
+    // https://www.drupal.org/project/drupal/issues/1945262
+    // These dependencies are needed for behaviors.
+    $elements['#attached']['library'][] = 'core/drupalSettings';
+    $elements['#attached']['library'][] = 'core/drupal';
+    $elements['#attached']['library'][] = 'core/jquery';
+    $elements['#attached']['library'][] = 'core/jquery.once';
     $elements['#attached']['library'][] = 'entity_overlay/entity_overlay.behaviors';
     $elements['#attached']['drupalSettings'] = [
       'entity_overlay' => $entitySettings,
     ];
+    // Ajax library must be declared after the behaviors.
+    $elements['#attached']['library'][] = 'core/drupal.ajax';
 
     return $elements;
   }

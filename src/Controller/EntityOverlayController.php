@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class EntityOverlayController extends ControllerBase {
 
   /**
-   * Fetch a loaded entity for a type in a view mode.
+   * Fetch a loaded entity for a type in a view mode and wrap it in a Dialog.
    *
    * @param string $method
    *   Method.
@@ -58,7 +58,8 @@ class EntityOverlayController extends ControllerBase {
         $response->setAttachments($build['#attached']);
         // @todo set dialog options
         $options = [];
-        $response->addCommand(new OpenDialogCommand('#entity-overlay__container', $entity->getTitle(), $content, $options));
+        // @todo fix label translation
+        $response->addCommand(new OpenDialogCommand('#entity-overlay__container', $entity->label(), $content, $options));
       }
       catch (InvalidPluginDefinitionException $exception) {
         print $exception->getMessage();
